@@ -1,0 +1,75 @@
+spring:
+  profiles:
+    active: development
+  thymeleaf:
+    cache: false
+    prefix: classpath:/static/
+  devtools:
+    add-properties: true
+    restart:
+      enabled: true
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: YOUR_GOOGLE_CLIENT_ID
+            client-secret: YOUR_GOOGLE_CLIENT_SECRET
+            scope: profile, email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+          github:
+            client-id: YOUR_GITHUB_CLIENT_ID
+            client-secret: YOUR_GITHUB_CLIENT_SECRET
+            scope: read:user
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+          linkedin:
+            client-id: YOUR_LINKEDIN_CLIENT_ID
+            client-secret: YOUR_LINKEDIN_CLIENT_SECRET
+            scope: r_liteprofile, r_emailaddress
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+          microsoft:
+            client-id: YOUR_MICROSOFT_CLIENT_ID
+            client-secret: YOUR_MICROSOFT_CLIENT_SECRET
+            scope: User.Read
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+          apple:
+            client-id: YOUR_APPLE_CLIENT_ID
+            client-secret: YOUR_APPLE_CLIENT_SECRET
+            scope: name, email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+server:
+  port: 3000
+  error:
+    whitelabel:
+      enabled: false
+#  error:
+#    path: /error
+management:
+  server:
+    port: 3001
+# used in local mode, ZK cluster already running and accessible on 2181
+#server:
+#  port: 1970
+#management:
+#  server:
+#    port: 1971
+
+# App Properties
+storage:
+  location: /app/upload-dir
+
+# Zookeeper properties
+zk:
+  port: 2181
+  sessionTimeout: 6000
+  connectionTimeout: 6000
+  servers: zkApp1:2181,zkApp2:2181,zkApp3:2181
+  mode: cluster # can be single or cluster
+
+logging:
+  level:
+    edu.cooper.ai: DEBUG
+    org.apache.zookeeper: ERROR
+    web: WARN
+    org.thymeleaf: WARN
+    root: WARN

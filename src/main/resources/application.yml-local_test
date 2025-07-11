@@ -1,0 +1,55 @@
+spring:
+  profiles:
+    active: development
+  thymeleaf:
+    cache: false
+    prefix: classpath:/static/
+  devtools:
+    add-properties: true
+    restart:
+      enabled: true
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: YOUR_GOOGLE_CLIENT_ID
+            client-secret: YOUR_GOOGLE_CLIENT_SECRET
+            scope: profile, email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+server:
+  port: 3000
+  error:
+    whitelabel:
+      enabled: false
+#  error:
+#    path: /error
+management:
+  server:
+    port: 3001
+# used in local mode, ZK cluster already running and accessible on 2181
+#server:
+#  port: 1970
+#management:
+#  server:
+#    port: 1971
+
+# App Properties
+storage:
+  location: ./upload-dir
+
+# Zookeeper properties
+zk:
+  port: 2181
+  sessionTimeout: 6000
+  connectionTimeout: 6000
+#  servers: zkApp1:2181,zkApp2:2181,zkApp3:2181
+#  mode: cluster # can be 'single' or 'cluster'
+  mode: single
+logging:
+  level:
+    com.konsilix: DEBUG
+    org.apache.zookeeper: INFO
+    web: WARN
+    org.thymeleaf: WARN
+    root: WARN
