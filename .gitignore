@@ -1,24 +1,204 @@
-# Compiled class file
+#
+# .gitignore
+# added ignores for Java, Kubernetes, Helm, Docker, IntelliJ, and Visual Studio Code
+
+# ------------------------------------------------------------
+# Application-Specific Ignore Rules
+# ------------------------------------------------------------
+src/main/resources/application.yml
+upload-dir
+
+# ------------------------------------------------------------
+# General Ignore Rules
+# ------------------------------------------------------------
+.DS_Store             # macOS system files
+Thumbs.db             # Windows system files
+*~                    # Backup files
+*.log
+*.tmp
+logs/                 # Directory for application logs
+
+# ------------------------------------------------------------
+# Java Specific Ignore Rules
+# ------------------------------------------------------------
+# Compiled class files
 *.class
 
-# Log file
-*.log
-
-# BlueJ files
-*.ctxt
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files #
+# Package Files
 *.jar
 *.war
-*.nar
 *.ear
 *.zip
 *.tar.gz
 *.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-replay_pid*
+# Javadoc output
+/javadoc/
+
+# Annotation processing
+.apt_generated/
+
+# JVM crash dumps
+hs_err_pid*.log
+
+# JDK specific files (e.g., jaxb)
+jaxb/
+
+# Gradle related (if you happen to have any mixed with Maven or for build systems like Gradle)
+.gradle/
+build/
+
+# ------------------------------------------------------------
+# Maven Specific Ignore Rules
+# ------------------------------------------------------------
+target/                       # Maven's default output directory
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+
+# Maven Wrapper
+# https://github.com/takari/maven-wrapper#usage-without-binary-jar
+.mvn/wrapper/maven-wrapper.jar
+.mvn/timing.properties
+
+# Checkstyle, FindBugs, PMD reports
+checkstyle-result.xml
+findbugs-exclude.xml
+pmd.xml
+
+# ------------------------------------------------------------
+# Kubernetes Specific Ignore Rules (Manifests and related)
+# ------------------------------------------------------------
+# Kubeconfig files (NEVER commit your kubeconfig files!)
+*.kubeconfig
+kubeconfig
+
+# Kubernetes generated files or temporary files
+*.bak
+*.old
+*.tmp
+
+# Secrets files (if not using a secret management solution or external injection)
+# Best practice is to use tools like Vault, Kubernetes Secrets, or sealed secrets,
+# but if you have local secret files, ensure they are ignored.
+secrets*.yaml
+*.env
+.env
+.env.*
+*.key
+*.pem
+
+# Generated Kubernetes manifests (if using kustomize or similar tooling that outputs to a folder)
+# e.g., if you have a `k8s-generated/` directory for `kubectl apply -k` output
+k8s-generated/
+
+# ------------------------------------------------------------
+# Helm Specific Ignore Rules
+# ------------------------------------------------------------
+# Helm dependency charts downloaded to the 'charts' directory
+# (These are usually downloaded by `helm dependency build` and should not be committed)
+**/charts/            # Exclude charts/ directories within Helm charts (subcharts)
+
+# Helm-specific build artifacts
+*.tgz                 # Packaged Helm charts
+*.prov                # Provenance files for packaged charts
+
+# Helm temporary directories or cache (if they appear at the repo root)
+.helm/
+~/.helm/
+.cache/helm/
+
+# Value files containing sensitive information (if not handled by secrets management)
+# Consider if you have specific values files that should NOT be committed.
+# e.g., if you have 'values.prod.yaml' with sensitive config.
+# For example:
+# values.prod.yaml
+# values-secrets.yaml
+
+# ------------------------------------------------------------
+# IDE Specific Files
+# ------------------------------------------------------------
+
+# IntelliJ IDEA
+.idea/                # IntelliJ IDEA project files
+*.iml                 # IntelliJ IDEA module files
+*.ipr                 # IntelliJ IDEA project files
+*.iws                 # IntelliJ IDEA workspace files
+out/                  # Default output directory for compiled classes by IntelliJ
+.gradle/              # If you open a Maven project as Gradle in IDEA
+.vscode/settings.json # VS Code settings can sometimes be in .idea if converted
+.idea_modules/
+
+# VS Code
+.vscode/              # VS Code specific files
+.history/             # VS Code Local History extension
+*.code-workspace      # VS Code workspace files
+
+# Eclipse
+.project              # Eclipse project file
+.classpath            # Eclipse classpath file
+.settings/            # Eclipse project settings
+
+# NetBeans
+nbproject/private/    # NetBeans private project files
+build/                # NetBeans build output
+nbbuild/
+dist/
+nbdist/
+nbactions.xml         # NetBeans build actions
+nb-configuration.xml  # NetBeans configuration
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ------------------------------------------------------------
+# Docker Specific Ignore Rules
+# ------------------------------------------------------------
+# Built images (often stored in a local cache or registry, not committed)
+# Docker usually builds from the Dockerfile, so the output isn't directly
+# in the git repo. However, some tools might create temporary files.
+
+# Docker build context temporary files
+.dockerignore         # This file itself should be committed! But it guides Docker's ignores.
+
+# Local volumes or data directories created by Docker Compose/Docker Desktop
+# These usually contain application data and should not be version controlled.
+# Be specific here if you have named volumes or local bind mounts that get created.
+# Examples:
+# data/
+# db/data/
+# logs/ (already covered generally, but good to note if specific to Docker)
+
+# Docker Compose specific files that might be generated or contain sensitive info
+.env                 # If used for Docker Compose environment variables (already covered, but reiterating importance)
+docker-compose.override.yml # Override file that might contain local development settings/secrets
+*.env
+
+# Temporary files created during Docker build or execution
+*.bak
+*.tmp
+
+# Files/directories that Docker mounts into containers that should not be committed
+# If you create local directories specifically for Docker mounts and they contain
+# generated or sensitive data, list them here.
+# For instance, if your application generates files into './mount-data/'
+# mount-data/
+
+# ------------------------------------------------------------
+# Miscellaneous
+# ------------------------------------------------------------
+# Local environment overrides
+local.properties
+
+# Test reports
+target/surefire-reports/
+target/failsafe-reports/
+
+# Any other specific temporary or generated directories
+temp/
+tmp/

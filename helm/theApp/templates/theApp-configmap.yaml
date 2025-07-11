@@ -1,0 +1,520 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "theApp.fullname" . }}-configmap
+data:
+  zoo.cfg: |
+    #
+    # ZooKeeper configuration parameters
+    #
+    # server.0=zookeeper-0:2888:3888
+    # server.1=zookeeper-1:2888:3888
+    # server.2=zookeeper-2:2888:3888
+    #
+    4lw.commands.whitelist=srvr,dirs,ruok,stat,conf,isro,ok,envi,cons,crst,mntr,gtmk,srvr,dirs
+    #
+    standaloneEnabled=false
+    admin.enableServer=true
+    # The number of milliseconds of each tick
+    tickTime=2000
+    # The number of ticks that the initial 
+    # synchronization phase can take
+    initLimit=10
+    # The number of ticks that can pass between 
+    # sending a request and getting an acknowledgement
+    syncLimit=5
+    # the directory where the snapshot is stored.
+    # do not use /tmp for storage, /tmp here is just 
+    # example sakes.
+    dataDir=/tmp/zookeeper
+    # the port at which the clients will connect
+    clientPort=2181
+    # the maximum number of client connections.
+    # increase this if you need to handle more clients
+    maxClientCnxns=60
+    #
+    # Be sure to read the maintenance section of the 
+    # administrator guide before turning on autopurge.
+    #
+    # https://zookeeper.apache.org/doc/current/zookeeperAdmin.html#sc_maintenance
+    #
+    # The number of snapshots to retain in dataDir
+    autopurge.snapRetainCount=3
+    # Purge task interval in hours
+    # Set to "0" to disable auto purge feature
+    autopurge.purgeInterval=1
+
+    ## Metrics Providers
+    #
+    # https://prometheus.io Metrics Exporter
+    #metricsProvider.className=org.apache.zookeeper.metrics.prometheus.PrometheusMetricsProvider
+    #metricsProvider.httpHost=0.0.0.0
+    #metricsProvider.httpPort=7000
+    #metricsProvider.exportJvmInfo=true
+  start-zookeeper.sh: |
+    #!/usr/bin/env bash
+    # Derived from work Copyright 2017 The Kubernetes Authors.
+    # See https://github.com/kow3ns/kubernetes-zookeeper/blob/master/docker/scripts/start-zookeeper for more details
+    #
+    #
+    # Usage: start-zookeeper [OPTIONS]
+    # Starts a ZooKeeper server based on the supplied options.
+    #     --servers           The number of servers in the ensemble. The default
+    #                         value is 1.
+    #     --data_dir          The directory where the ZooKeeper process will store its
+    #                         snapshots. The default is /var/lib/zookeeper/data.
+    #     --data_log_dir      The directory where the ZooKeeper process will store its
+    #                         write ahead log. The default is
+    #                         /var/lib/zookeeper/data/log.
+    #     --conf_dir          The directory where the ZooKeeper process will store its
+    #                         configuration. The default is /opt/zookeeper/conf.
+    #     --client_port       The port on which the ZooKeeper process will listen for
+    #                         client requests. The default is 2181.
+
+    #     --election_port     The port on which the ZooKeeper process will perform
+    #                         leader election. The default is 3888.
+
+    #     --server_port       The port on which the ZooKeeper process will listen for
+    #                         requests from other servers in the ensemble. The
+    #                         default is 2888.
+
+    #     --tick_time         The length of a ZooKeeper tick in ms. The default is
+    #                         2000.
+
+    #     --init_limit        The number of Ticks that an ensemble member is allowed
+    #                         to perform leader election. The default is 10.
+
+    #     --sync_limit        The maximum session timeout that the ensemble will
+    #                         allows a client to request. The default is 5.
+
+    #     --heap              The maximum amount of heap to use. The format is the
+    #                         same as that used for the Xmx and Xms parameters to the
+    #                         JVM. e.g. --heap=2G. The default is 2G.
+
+    #     --max_client_cnxns  The maximum number of client connections that the
+    #                         ZooKeeper process will accept simultaneously. The
+    #                         default is 60.
+
+    #     --snap_retain_count The maximum number of snapshots the ZooKeeper process
+    #                         will retain if purge_interval is greater than 0. The
+    #                         default is 3.
+
+    #     --purge_interval    The number of hours the ZooKeeper process will wait
+    #                         between purging its old snapshots. If set to 0 old
+    #                         snapshots will never be purged. The default is 0.
+
+    #     --max_session_timeout The maximum time in milliseconds for a client session
+    #                         timeout. The default value is 2 * tick time.
+
+    #     --min_session_timeout The minimum time in milliseconds for a client session
+    #                         timeout. The default value is 20 * tick time.
+
+    #     --log_level         The log level for the zookeeeper server. Either FATAL,
+    #                         ERROR, WARN, INFO, DEBUG. The default is INFO.
+
+
+    USER=`whoami`
+    HOST=`hostname -s`
+    DOMAIN=`hostname -d`
+    LOG_LEVEL="ERROR"
+    CONF_DIR="/conf"
+    DATA_DIR="/data"
+    DATA_LOG_DIR="/${DATA_DIR}/log"
+    LOG_DIR="/logs"
+    CLIENT_PORT=2181
+    SERVER_PORT=2888
+    ELECTION_PORT=3888
+    TICK_TIME=2000
+    INIT_LIMIT=10
+    SYNC_LIMIT=5
+    #HEAP=2G
+    HEAP=512M
+    MAX_CLIENT_CNXNS=60
+    SNAP_RETAIN_COUNT=3
+    PURGE_INTERVAL=0
+    SERVERS=3
+
+    function print_usage() {
+    echo "\
+    Usage: start-zookeeper [OPTIONS]
+    Starts a ZooKeeper server based on the supplied options.
+        --servers           The number of servers in the ensemble. The default
+                            value is 1.
+
+        --data_dir          The directory where the ZooKeeper process will store its
+                            snapshots. The default is /var/lib/zookeeper/data.
+
+        --data_log_dir      The directory where the ZooKeeper process will store its
+                            write ahead log. The default is
+                            /var/lib/zookeeper/data/log.
+
+        --conf_dir          The directoyr where the ZooKeeper process will store its
+                            configuration. The default is /opt/zookeeper/conf.
+
+        --client_port       The port on which the ZooKeeper process will listen for
+                            client requests. The default is 2181.
+
+        --election_port     The port on which the ZooKeeper process will perform
+                            leader election. The default is 3888.
+
+        --server_port       The port on which the ZooKeeper process will listen for
+                            requests from other servers in the ensemble. The
+                            default is 2888.
+
+        --tick_time         The length of a ZooKeeper tick in ms. The default is
+                            2000.
+
+        --init_limit        The number of Ticks that an ensemble member is allowed
+                            to perform leader election. The default is 10.
+
+        --sync_limit        The maximum session timeout that the ensemble will
+                            allows a client to request. The default is 5.
+
+        --heap              The maximum amount of heap to use. The format is the
+                            same as that used for the Xmx and Xms parameters to the
+                            JVM. e.g. --heap=2G. The default is 2G.
+
+        --max_client_cnxns  The maximum number of client connections that the
+                            ZooKeeper process will accept simultaneously. The
+                            default is 60.
+
+        --snap_retain_count The maximum number of snapshots the ZooKeeper process
+                            will retain if purge_interval is greater than 0. The
+                            default is 3.
+
+        --purge_interval    The number of hours the ZooKeeper process will wait
+                            between purging its old snapshots. If set to 0 old
+                            snapshots will never be purged. The default is 0.
+
+        --max_session_timeout The maximum time in milliseconds for a client session
+                            timeout. The default value is 2 * tick time.
+
+        --min_session_timeout The minimum time in milliseconds for a client session
+                            timeout. The default value is 20 * tick time.
+
+        --log_level         The log level for the zookeeeper server. Either FATAL,
+                            ERROR, WARN, INFO, DEBUG. The default is INFO.
+    "
+    }
+
+    function create_data_dirs() {
+        if [ ! -d $DATA_DIR  ]; then
+            mkdir -p $DATA_DIR
+            chown -R $USER:$USER $DATA_DIR
+        fi
+
+        if [ ! -d $DATA_LOG_DIR  ]; then
+            mkdir -p $DATA_LOG_DIR
+            chown -R $USER:$USER $DATA_LOG_DIR
+        fi
+
+        if [ ! -d $LOG_DIR  ]; then
+            mkdir -p $LOG_DIR
+            chown -R $USER:$USER $LOG_DIR
+        fi
+        if [ ! -f $ID_FILE ] && [ $SERVERS -gt 1 ]; then
+            echo $MY_ID >> $ID_FILE
+        fi
+    }
+
+    function print_servers() {
+        for (( i=1; i<=$SERVERS; i++ ))
+        do
+            echo "server.$i=$NAME-$((i-1)).$DOMAIN:$SERVER_PORT:$ELECTION_PORT"
+        done
+    }
+
+    function create_config() {
+        rm -f $CONFIG_FILE
+        echo "#This file was autogenerated DO NOT EDIT" >> $CONFIG_FILE
+        echo "clientPort=$CLIENT_PORT" >> $CONFIG_FILE
+        echo "dataDir=$DATA_DIR" >> $CONFIG_FILE
+        echo "dataLogDir=$DATA_LOG_DIR" >> $CONFIG_FILE
+        echo "tickTime=$TICK_TIME" >> $CONFIG_FILE
+        echo "initLimit=$INIT_LIMIT" >> $CONFIG_FILE
+        echo "syncLimit=$SYNC_LIMIT" >> $CONFIG_FILE
+        echo "maxClientCnxns=$MAX_CLIENT_CNXNS" >> $CONFIG_FILE
+        echo "minSessionTimeout=$MIN_SESSION_TIMEOUT" >> $CONFIG_FILE
+        echo "maxSessionTimeout=$MAX_SESSION_TIMEOUT" >> $CONFIG_FILE
+        echo "autopurge.snapRetainCount=$SNAP_RETAIN_COUNT" >> $CONFIG_FILE
+        echo "autopurge.purgeInteval=$PURGE_INTERVAL" >> $CONFIG_FILE
+        if [ $SERVERS -gt 1 ]; then
+            print_servers >> $CONFIG_FILE
+        fi
+        cat $CONFIG_FILE >&2
+    }
+
+    function create_jvm_props() {
+        rm -f $JAVA_ENV_FILE
+        echo "ZOO_LOG_DIR=$LOG_DIR" >> $JAVA_ENV_FILE
+        echo "JVMFLAGS=\"-Xmx$HEAP -Xms$HEAP\"" >> $JAVA_ENV_FILE
+    }
+
+    function create_log_props() {
+        rm -f $LOGGER_PROPS_FILE
+        echo "Creating ZooKeeper log4j configuration"
+        echo "zookeeper.root.logger=CONSOLE" >> $LOGGER_PROPS_FILE
+        echo "zookeeper.console.threshold="$LOG_LEVEL >> $LOGGER_PROPS_FILE
+        echo "log4j.rootLogger=\${zookeeper.root.logger}" >> $LOGGER_PROPS_FILE
+        echo "log4j.appender.CONSOLE=org.apache.log4j.ConsoleAppender" >> $LOGGER_PROPS_FILE
+        echo "log4j.appender.CONSOLE.Threshold=\${zookeeper.console.threshold}" >> $LOGGER_PROPS_FILE
+        echo "log4j.appender.CONSOLE.layout=org.apache.log4j.PatternLayout" >> $LOGGER_PROPS_FILE
+        echo "log4j.appender.CONSOLE.layout.ConversionPattern=%d{ISO8601} [myid:%X{myid}] - %-5p [%t:%C{1}@%L] - %m%n" >> $LOGGER_PROPS_FILE
+    }
+
+    optspec=":hv-:"
+    while getopts "$optspec" optchar; do
+
+        case "${optchar}" in
+            -)
+                case "${OPTARG}" in
+                    servers=*)
+                        SERVERS=${OPTARG##*=}
+                        ;;
+                    data_dir=*)
+                        DATA_DIR=${OPTARG##*=}
+                        ;;
+                    data_log_dir=*)
+                        DATA_LOG_DIR=${OPTARG##*=}
+                        ;;
+                    log_dir=*)
+                        LOG_DIR=${OPTARG##*=}
+                        ;;
+                    conf_dir=*)
+                        CONF_DIR=${OPTARG##*=}
+                        ;;
+                    client_port=*)
+                        CLIENT_PORT=${OPTARG##*=}
+                        ;;
+                    election_port=*)
+                        ELECTION_PORT=${OPTARG##*=}
+                        ;;
+                    server_port=*)
+                        SERVER_PORT=${OPTARG##*=}
+                        ;;
+                    tick_time=*)
+                        TICK_TIME=${OPTARG##*=}
+                        ;;
+                    init_limit=*)
+                        INIT_LIMIT=${OPTARG##*=}
+                        ;;
+                    sync_limit=*)
+                        SYNC_LIMIT=${OPTARG##*=}
+                        ;;
+                    heap=*)
+                        HEAP=${OPTARG##*=}
+                        ;;
+                    max_client_cnxns=*)
+                        MAX_CLIENT_CNXNS=${OPTARG##*=}
+                        ;;
+                    snap_retain_count=*)
+                        SNAP_RETAIN_COUNT=${OPTARG##*=}
+                        ;;
+                    purge_interval=*)
+                        PURGE_INTERVAL=${OPTARG##*=}
+                        ;;
+                    max_session_timeout=*)
+                        MAX_SESSION_TIMEOUT=${OPTARG##*=}
+                        ;;
+                    min_session_timeout=*)
+                        MIN_SESSION_TIMEOUT=${OPTARG##*=}
+                        ;;
+                    log_level=*)
+                        LOG_LEVEL=${OPTARG##*=}
+                        ;;
+                    *)
+                        echo "Unknown option --${OPTARG}" >&2
+                        exit 1
+                        ;;
+                esac;;
+            h)
+                print_usage
+                exit
+                ;;
+            v)
+                echo "Parsing option: '-${optchar}'" >&2
+                ;;
+            *)
+                if [ "$OPTERR" != 1 ] || [ "${optspec:0:1}" = ":" ]; then
+                    echo "Non-option argument: '-${OPTARG}'" >&2
+                fi
+                ;;
+        esac
+    done
+
+    MIN_SESSION_TIMEOUT=${MIN_SESSION_TIMEOUT:- $((TICK_TIME*2))}
+    MAX_SESSION_TIMEOUT=${MAX_SESSION_TIMEOUT:- $((TICK_TIME*20))}
+    ID_FILE="$DATA_DIR/myid"
+    CONFIG_FILE="$CONF_DIR/zoo.cfg"
+    LOGGER_PROPS_FILE="$CONF_DIR/log4j.properties"
+    JAVA_ENV_FILE="$CONF_DIR/java.env"
+
+    if [[ $HOST =~ (.*)-([0-9]+)$ ]]; then
+        NAME=${BASH_REMATCH[1]}
+        ORD=${BASH_REMATCH[2]}
+    else
+        echo "Failed to parse name and ordinal of Pod"
+        exit 1
+    fi
+
+    MY_ID=$((ORD+1))
+    echo $MY_ID > $ID_FILE
+    export ZOO_MY_ID=$MY_ID
+
+    APP_JAR=/{{ include "theApp.fullname" . }}.jar
+    APP_LOG=/logs/app.log
+    ZK_LOG=/logs/zk.log
+
+    RUN_CONFIG="-Dzk.url=$(hostname):2181 -Dleader.algo=2"
+    
+    create_config && create_jvm_props && create_log_props && create_data_dirs && \
+    exec zkServer.sh start-foreground 2>&1 | tee -a ${ZK_LOG} &
+    sleep 10
+
+    echo "Starting App Server" | tee -a ${ZK_LOG} ${APP_LOG}
+    
+    cd /{{ include "theApp.fullname" . }}
+    echo "Running Spring Boot application" | tee -a ${APP_LOG}
+    
+    ./mvnw spring-boot:run \
+    -Dspring.devtools.restart.enabled=true \
+    -Dspring.devtools.livereload.enabled=true
+
+
+    echo This will only run once the Spring Boot process has finished
+    echo "Spring Boot application has finished."
+
+#    echo "Container's hostname: $ZK_NODE_HOSTNAME" | tee -a ${ZK_LOG} ${APP_LOG}
+#    echo "Container's IP address: $ZK_NODE_IP" | tee -a ${ZK_LOG} ${APP_LOG}
+#    echo "Starting ZooKeeper Server" | tee -a ${ZK_LOG} ${APP_LOG}
+#    echo "ZK ID = ${ZOO_MY_ID}" | tee -a ${ZK_LOG} ${APP_LOG}
+#
+#    echo "Starting App Server" | tee -a ${ZK_LOG} ${APP_LOG}
+#    java ${RUN_CONFIG} -jar ${APP_JAR} 2>&1 >> ${APP_LOG} &
+#
+#
+#    create_config && create_jvm_props && create_log_props && create_data_dirs && \
+#    exec zkServer.sh start-foreground 2>&1 | tee -a ${ZK_LOG}
+  #    exec zkServer.sh start-foreground 2>&1 | tee -a ${ZK_LOG} &
+
+  #   sleep 10
+  #    echo "Starting App Server" | tee -a ${ZK_LOG} ${APP_LOG}
+  #    java ${RUN_CONFIG} -jar ${APP_JAR} 2>&1 >> ${APP_LOG}
+  logback.xml: |
+    <configuration>
+        <!-- Uncomment this if you would like to expose Logback JMX beans -->
+        <!--jmxConfigurator /-->
+        <property name="zookeeper.console.threshold" value="ERROR" />
+        <property name="zookeeper.log.dir" value="." />
+        <property name="zookeeper.log.file" value="zookeeper.log" />
+        <property name="zookeeper.log.threshold" value="ERROR" />
+        <property name="zookeeper.log.maxfilesize" value="256MB" />
+        <property name="zookeeper.log.maxbackupindex" value="20" />
+        <!--
+        console
+        Add "console" to root logger if you want to use this
+        -->
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{ISO8601} [myid:%X{myid}] - %-5p [%t:%C{1}@%L] - %m%n</pattern>
+            </encoder>
+            <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                <level>${zookeeper.console.threshold}</level>
+            </filter>
+        </appender>
+        <!--
+        Add ROLLINGFILE to root logger to get log file output
+        -->
+        <!--appender name="ROLLINGFILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${zookeeper.log.dir}/${zookeeper.log.file}</File>
+        <encoder>
+            <pattern>%d{ISO8601} [myid:%X{myid}] - %-5p [%t:%C{1}@%L] - %m%n</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${zookeeper.log.threshold}</level>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <maxIndex>${zookeeper.log.maxbackupindex}</maxIndex>
+            <FileNamePattern>${zookeeper.log.dir}/${zookeeper.log.file}.%i</FileNamePattern>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <MaxFileSize>${zookeeper.log.maxfilesize}</MaxFileSize>
+        </triggeringPolicy>
+        </appender-->
+        <!--
+        Add TRACEFILE to root logger to get log file output
+        Log TRACE level and above messages to a log file
+        -->
+        <!--property name="zookeeper.tracelog.dir" value="${zookeeper.log.dir}" />
+        <property name="zookeeper.tracelog.file" value="zookeeper_trace.log" />
+        <appender name="TRACEFILE" class="ch.qos.logback.core.FileAppender">
+        <File>${zookeeper.tracelog.dir}/${zookeeper.tracelog.file}</File>
+        <encoder>
+            <pattern>%d{ISO8601} [myid:%X{myid}] - %-5p [%t:%C{1}@%L] - %m%n</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>TRACE</level>
+        </filter>
+        </appender-->
+        <!--
+        zk audit logging
+        -->
+        <!--property name="zookeeper.auditlog.file" value="zookeeper_audit.log" />
+        <property name="zookeeper.auditlog.threshold" value="ERROR" />
+        <property name="audit.logger" value="ERROR, RFAAUDIT" />
+        <appender name="RFAAUDIT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${zookeeper.log.dir}/${zookeeper.auditlog.file}</File>
+        <encoder>
+            <pattern>%d{ISO8601} %p %c{2}: %m%n</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${zookeeper.auditlog.threshold}</level>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <maxIndex>10</maxIndex>
+            <FileNamePattern>${zookeeper.log.dir}/${zookeeper.auditlog.file}.%i</FileNamePattern>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <MaxFileSize>10MB</MaxFileSize>
+        </triggeringPolicy>
+        </appender>
+        <logger name="org.apache.zookeeper.audit.Slf4jAuditLogger" additivity="false" level="${audit.logger}">
+        <appender-ref ref="RFAAUDIT" />
+        </logger-->
+        <root level="ERROR">
+            <appender-ref ref="CONSOLE" />
+        </root>
+    </configuration>
+  configuration.xsl: |
+    <?xml version="1.0"?>
+    <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+        <xsl:output method="html"/>
+        <xsl:template match="configuration">
+            <html>
+                <body>
+                    <table border="1">
+                        <tr>
+                            <td>name</td>
+                            <td>value</td>
+                            <td>description</td>
+                        </tr>
+                        <xsl:for-each select="property">
+                            <tr>
+                                <td><a name="{name}"><xsl:value-of select="name"/></a></td>
+                                <td><xsl:value-of select="value"/></td>
+                                <td><xsl:value-of select="description"/></td>
+                            </tr>
+                        </xsl:for-each>
+                    </table>
+                </body>
+            </html>
+        </xsl:template>
+    </xsl:stylesheet>
+  ready-probe.sh: |
+    #!/usr/bin/env bash
+    OK=$(echo ruok | nc 127.0.0.1 $1)
+    if [ "$OK" == "imok" ]; then
+        exit 0
+    else
+        exit 1
+    fi
