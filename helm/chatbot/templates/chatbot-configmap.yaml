@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "theApp.fullname" . }}-configmap
+  name: {{ include "chatbot.fullname" . }}-configmap
 data:
   zoo.cfg: |
     #
@@ -361,7 +361,7 @@ data:
     echo $MY_ID > $ID_FILE
     export ZOO_MY_ID=$MY_ID
 
-    APP_JAR=/{{ include "theApp.fullname" . }}.jar
+    APP_JAR=/{{ include "chatbot.fullname" . }}.jar
     APP_LOG=/logs/app.log
     ZK_LOG=/logs/zk.log
 
@@ -373,7 +373,7 @@ data:
 
     echo "Starting App Server" | tee -a ${ZK_LOG} ${APP_LOG}
     
-    cd /{{ include "theApp.fullname" . }}
+    cd /{{ include "chatbot.fullname" . }}
     echo "Running Spring Boot application" | tee -a ${APP_LOG}
     
     ./mvnw spring-boot:run \

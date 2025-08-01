@@ -1,6 +1,6 @@
 #!/bin/bash
 
-APP=theApp
+APP=chatbot
 docker context use default
 #docker context use desktop-linux
 

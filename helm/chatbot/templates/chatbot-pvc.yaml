@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ include "theApp.fullname" . }}-pvc
+  name: {{ include "chatbot.fullname" . }}-pvc
 spec:
   accessModes:
     - {{ .Values.storage.accessModes }}

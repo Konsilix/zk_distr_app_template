@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "theApp.fullname" . }}
+  name: {{ include "chatbot.fullname" . }}
 spec:
-  serviceName: {{ include "theApp.fullname" . }}-headless
+  serviceName: {{ include "chatbot.fullname" . }}-headless
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ include "theApp.fullname" . }}
+      app: {{ include "chatbot.fullname" . }}
   # updateStrategy:
   #   type: RollingUpdate
   # podManagementPolicy: OrderedReady
   template:
     metadata:
       labels:
-        app: {{ include "theApp.fullname" . }}
+        app: {{ include "chatbot.fullname" . }}
     spec:
       containers:
-        - name: kubernetes-theApp
+        - name: kubernetes-chatbot
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
@@ -37,14 +37,14 @@ spec:
             - containerPort: {{ .Values.zkElectionPort }}
               name: leader-election
             - containerPort: {{ .Values.zkAppPort }}
-              name: theApp
+              name: chatbot
           volumeMounts:
             - name: data-volume
               mountPath: /app
             - name: config
               mountPath: /my-config
               readOnly: true
-            - mountPath: /{{ include "theApp.fullname" . }}
+            - mountPath: /{{ include "chatbot.fullname" . }}
               name: zkapp-volume
           command:
             - sh
@@ -64,13 +64,13 @@ spec:
       volumes:
         - name: config
           configMap:
-            name: {{ include "theApp.fullname" . }}-configmap
+            name: {{ include "chatbot.fullname" . }}-configmap
 
         - name: data-volume
           persistentVolumeClaim:
-            claimName: {{ include "theApp.fullname" . }}-pvc
+            claimName: {{ include "chatbot.fullname" . }}-pvc
 
         - name: zkapp-volume
           hostPath:
-            path: /{{ include "theApp.fullname" . }}
-            type: Directory
+            path: /app
+            type: DirectoryOrCreate

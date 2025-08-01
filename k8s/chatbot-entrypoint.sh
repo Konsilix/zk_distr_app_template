@@ -3,7 +3,7 @@ set -e
 #
 # Set up the environment
 #
-APP="theApp"
+APP="chatbot"
 ZK_NODE_IP=$(awk 'END{print $1}' /etc/hosts)
 ZK_NODE_HOSTNAME=$(awk 'END{print $2}' /etc/hosts)
 #ZK_NODE_HOSTNAME=${ZOO_MY_HOSTNAME}
@@ -26,7 +26,7 @@ echo ${ZOO_MY_ID} > /data/myid
 #
 zkServer.sh start-foreground 2>&1 | tee -a ${ZK_LOG} &
 sleep 10
-# Start the App
+# Start the DocChatBot
 echo "Starting App Server" | tee -a ${ZK_LOG} ${APP_LOG}
 java ${RUN_CONFIG} -jar ${APP_JAR} 2>&1 >> ${APP_LOG}
 # do not put the app in the background; otherwise, the container will exit.

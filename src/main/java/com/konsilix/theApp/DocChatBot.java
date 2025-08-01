@@ -16,7 +16,7 @@ import static com.konsilix.zk.ZkDemoUtil.getMyHostname;
 
 @SpringBootApplication(scanBasePackages={"com.konsilix"})
 @EnableConfigurationProperties(AppZkProperties.class)
-public class App {
+public class DocChatBot {
     static String PID_FILE_NAME = "app.pid";
 
     @Getter(AccessLevel.PUBLIC)
@@ -30,26 +30,9 @@ public class App {
         }
     }
 
-    // used to see which Beans are running within the application on the node
-//	@Bean
-//	public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
-//		return args -> {
-//
-//			System.out.println("Let's inspect the beans provided by Spring Boot:");
-//
-//			String[] beanNames = ctx.getBeanDefinitionNames();
-//			Arrays.sort(beanNames);
-//			for (String beanName : beanNames) {
-//				System.out.println(beanName);
-//			}
-//
-//		};
-//	}
-
     public static void main(String[] args) {
         System.out.println("hostname: " + getMyHostname());
-//		SpringApplication.run(DemoApplication.class, args);
-        SpringApplication application = new SpringApplication(App.class);
+        SpringApplication application = new SpringApplication(DocChatBot.class);
 //		application.addListeners(new SpringAppEventsListener());
         application.run(args);
     }

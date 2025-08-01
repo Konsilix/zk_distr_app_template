@@ -45,7 +45,7 @@ public interface ZkService {
     void registerDataChangeWatcher(String path, IZkDataListener iZkDataListener);
 
     /*
-     * App logic
+     * DocChatBot logic
      */
     void createNodeInAppZnode(String nodeName, String data) throws KeeperException.NodeExistsException;
 
