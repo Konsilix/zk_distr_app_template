@@ -4,7 +4,7 @@
 # docker build -t theApp:v1 .
 ARG BASE_IMAGE=3.8.4
 FROM zookeeper:$BASE_IMAGE
-ENV APP="theApp"
+ENV APP="chatbot"
 
 RUN /bin/rm -rf /opt
 
@@ -26,7 +26,7 @@ RUN apt-get install -y dnsutils net-tools traceroute iputils-ping dos2unix vim
 #RUN apt-get autoremove -y
 
 # Copy the application into the container
-# COPY $APP-0.0.1-SNAPSHOT.jar /$APP.jar
+COPY $APP-0.0.1-SNAPSHOT.jar /$APP.jar
 
 # Zookeeper configuration
 COPY zoo.cfg /conf/zoo.cfg
@@ -65,6 +65,7 @@ ENV JAVA_HOME=/usr/lib/jvm/java-21-amazon-corretto
 ENV PATH=$JAVA_HOME/bin:$PATH
 
 # Set the entrypoint script to be the entrypoint for the container
+#CMD ["/bin/bash","-c","mkdir /chatbot"]
 ENTRYPOINT ["/${APP}-entrypoint.sh"]
 
 # Set the default command to be the Zookeeper application

@@ -5,9 +5,14 @@
 # ------------------------------------------------------------
 # Application-Specific Ignore Rules
 # ------------------------------------------------------------
+app.version
 src/main/resources/application.yml
 upload-dir
-
+knowledge_base.ser
+tracked_users.json
+.idea
+target
+*.pid
 # ------------------------------------------------------------
 # General Ignore Rules
 # ------------------------------------------------------------

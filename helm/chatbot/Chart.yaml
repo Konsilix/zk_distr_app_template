@@ -1,6 +1,6 @@
 apiVersion: v2
-name: theApp
-description: A Helm chart for deploying theApp with Zookeeper
+name: chatbot
+description: A Helm chart for deploying chatbot with Zookeeper
 
 # A chart can be either an 'application' or a 'library' chart.
 #
