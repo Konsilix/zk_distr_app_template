@@ -8,9 +8,6 @@ spec:
   selector:
     matchLabels:
       app: {{ include "chatbot.fullname" . }}
-  # updateStrategy:
-  #   type: RollingUpdate
-  # podManagementPolicy: OrderedReady
   template:
     metadata:
       labels:
@@ -25,10 +22,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.labels['statefulset.kubernetes.io/pod-index']
-          # resources:
-          #   requests:
-          #     memory: "500Mi"
-          #     cpu: "0.25"
           ports:
             - containerPort: {{ .Values.zkClientPort }}
               name: client
@@ -41,25 +34,12 @@ spec:
           volumeMounts:
             - name: data-volume
               mountPath: /app
-            - name: config
-              mountPath: /my-config
-              readOnly: true
-            - mountPath: /{{ include "chatbot.fullname" . }}
-              name: zkapp-volume
-          command:
-            - sh
-            - -c
-            - "cd / && /{{ include "chatbot.fullname" . }}-entrypoint.sh"
+          # The `command` block was removed from here. This allows the container
+          # to use the `ENTRYPOINT` defined in the Dockerfile.
+          # The `zkapp-volume` is no longer needed since we are running the JAR
+          # from the Docker image directly.
       volumes:
-        - name: config
-          configMap:
-            name: {{ include "chatbot.fullname" . }}-configmap
-
         - name: data-volume
           persistentVolumeClaim:
             claimName: {{ include "chatbot.fullname" . }}-pvc
-
-        - name: zkapp-volume
-          hostPath:
-            path: /app
-            type: DirectoryOrCreate
+        # The `zkapp-volume` definition was removed from here.
