@@ -49,18 +49,7 @@ spec:
           command:
             - sh
             - -c
-            - "cd /conf && /bin/rm * && cp /my-config/* .&&
-            bash -x /conf/start-zookeeper.sh \
-            -conf_dir=/conf --servers={{ .Values.replicaCount }} \
-            --data_dir=/data --data_log_dir=/data/log --log_dir=/logs \
-            --client_port={{ .Values.zkClientPort }} \
-            --election_port={{ .Values.zkElectionPort }} \
-            --server_port={{ .Values.zkServerPort }} \
-            --tick_time=2000 --init_limit=10 --sync_limit=5 --heap={{ .Values.zkHeap }} \
-            --max_client_cnxns=60 --snap_retain_count=3 --purge_interval=12 \
-            --max_session_timeout={{ .Values.zkMaxSessionTimeout}} \
-            --min_session_timeout={{ .Values.zkMinSessionTimeout }} \
-            --log_level=ERROR"
+            - "cd / && /{{ include "chatbot.fullname" . }}-entrypoint.sh"
       volumes:
         - name: config
           configMap:
