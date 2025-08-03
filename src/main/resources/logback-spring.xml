@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Use Spring Boot's default logback configurations -->
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+
+    <!--
+    This is the magic part. The <springProperty> tag reads a property
+    from the Spring Environment (which includes system env variables)
+    and exposes it for Logback to use.
+-->
+    <springProperty scope="context" name="KUBE_NODE_NAME" source="KUBERNETES_NODE_NAME" defaultValue="local-node"/>
+    <springProperty scope="context" name="KUBE_POD_NAME" source="KUBERNETES_POD_NAME" defaultValue="local-pod"/>
+
+    <!-- Define a new console appender with a custom pattern -->
+    <appender name="CONSOLE_WITH_HOSTNAME" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!--
+                Use the %property{...} converter to include the variable
+                defined in <springProperty> in your log pattern.
+            -->
+            <!-- This pattern uses %host to automatically include the hostname -->
+<!--            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%host] - %msg%n</pattern>-->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} [Node: %property{KUBE_NODE_NAME}] [Pod: %property{KUBE_POD_NAME}] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Set specific log levels for different packages. -->
+    <!-- This is the XML equivalent of the logging.level properties in application.yml -->
+    <logger name="com.konsilix" level="INFO"/>
+    <logger name="org.I0Itec.zkclient" level="WARN"/>
+    <logger name="org.apache.zookeeper" level="WARN"/>
+    <logger name="org.springframework.web" level="WARN"/>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE_WITH_HOSTNAME"/>
+    </root>
+</configuration>
