@@ -1,4 +1,4 @@
-package com.konsilix.theApp.configuration;
+package com.konsilix.chatbot.configuration;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
@@ -14,7 +14,7 @@ public class DevConfiguration implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:*") // TODO rob - change this to the actual frontend URL using properties from application.yml
+                .allowedOrigins("http://localhost:*") // TODO rob - change this to the actual frontend URL using properties from application.yaml
 //                .allowCredentials(true)
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS").allowedOrigins("*");
     }

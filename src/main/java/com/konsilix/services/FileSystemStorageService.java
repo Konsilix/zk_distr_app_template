@@ -23,17 +23,18 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
-@ConfigurationPropertiesScan
 @Service
 public class FileSystemStorageService implements StorageService {
     private final Path rootLocation;
 
-    @Autowired private ZkService zkService;
+    private final ZkService zkService; // Make final
 
+    // Use a single constructor for all required dependencies
     @Autowired
-    public FileSystemStorageService(StorageProperties properties) {
+    public FileSystemStorageService(StorageProperties properties, ZkService zkService) {
+        this.zkService = zkService; // Assign zkService
 
-        if(properties.getLocation().trim().isEmpty()){ //if(properties.getLocation().trim().length() == 0){
+        if(properties.getLocation() == null || properties.getLocation().trim().isEmpty()){
             throw new StorageException("File upload location can not be Empty.");
         }
 
@@ -135,9 +136,9 @@ public class FileSystemStorageService implements StorageService {
     @Override
     public void delete(String filename) {
         try {
-            System.out.println("Deleting file:"+filename);
+            log.info("Deleting file: {}", filename);
             zkService.deleteNodeInFilesZnode(filename);
-            System.out.println("Done."+filename);
+            log.info("Done deleting file from ZK node. {}", filename);
             Path fileToDelete = load(filename);
             Files.deleteIfExists(fileToDelete);
             log.info("File deleted successfully: {}", filename);

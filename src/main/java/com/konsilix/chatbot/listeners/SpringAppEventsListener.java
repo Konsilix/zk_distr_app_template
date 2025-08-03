@@ -1,4 +1,4 @@
-package com.konsilix.theApp.listeners;
+package com.konsilix.chatbot.listeners;
 
 import org.springframework.boot.context.event.SpringApplicationEvent;
 import org.springframework.context.ApplicationListener;

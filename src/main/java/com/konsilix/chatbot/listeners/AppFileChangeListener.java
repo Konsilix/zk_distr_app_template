@@ -1,6 +1,6 @@
-package com.konsilix.theApp.listeners;
+package com.konsilix.chatbot.listeners;
 
-import com.konsilix.theApp.models.ClusterInfo;
+import com.konsilix.chatbot.models.ClusterInfo;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.devtools.filewatch.ChangedFile;
 import org.springframework.boot.devtools.filewatch.ChangedFiles;

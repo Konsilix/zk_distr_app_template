@@ -3,7 +3,7 @@ package com.konsilix.zk.watchers;
 import static com.konsilix.zk.ZkDemoUtil.ELECTION_NODE_2;
 
 import com.konsilix.zk.ZkService;
-import com.konsilix.theApp.models.ClusterInfo;
+import com.konsilix.chatbot.models.ClusterInfo;
 import java.util.Collections;
 import java.util.List;
 import lombok.Setter;

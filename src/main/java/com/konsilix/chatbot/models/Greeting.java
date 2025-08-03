@@ -1,4 +1,4 @@
-package com.konsilix.theApp.models;
+package com.konsilix.chatbot.models;
 
 public class Greeting {
     private String message;

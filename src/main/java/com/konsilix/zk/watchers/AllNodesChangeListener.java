@@ -1,6 +1,6 @@
 package com.konsilix.zk.watchers;
 
-import com.konsilix.theApp.models.ClusterInfo;
+import com.konsilix.chatbot.models.ClusterInfo;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.I0Itec.zkclient.IZkChildListener;

@@ -1,0 +1,129 @@
+# /Users/rob/dev/distr_chatbot/k8s/deployment-zookeeper.yaml
+
+# --- Zookeeper Headless Service ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zk-hs
+spec:
+  publishNotReadyAddresses: true
+  clusterIP: None
+  # Added the server and leader-election ports.
+  # This is crucial for the Zookeeper pods to communicate with each other.
+  ports:
+    - name: client
+      port: 2181
+      targetPort: 2181
+    - name: server
+      port: 2888
+      targetPort: 2888
+    - name: leader-election
+      port: 3888
+      targetPort: 3888
+  selector:
+    app: zk
+---
+# --- Zookeeper StatefulSet ---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: zk
+spec:
+  serviceName: "zk-hs"
+  replicas: 3
+  # The default is OrderedReady, which creates them sequentially. Other is Parallel
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      app: zk
+  template:
+    metadata:
+      labels:
+        app: zk
+    spec:
+      containers:
+        - name: zk
+          image: zookeeper:3.8.4
+          ports:
+            - containerPort: 2181
+              name: client
+            - containerPort: 2888
+              name: server
+            - containerPort: 3888
+              name: leader-election
+          # Added a readinessProbe to ensure sequential startup.
+          # This is the standard way to deploy Zookeeper reliably on Kubernetes.
+          readinessProbe:
+            exec:
+              # This command asks the server for its status and checks if the 'Mode'
+              # is either 'leader' or 'follower'. This is a true health check.
+              command:
+                - "sh"
+                - "-c"
+                - "echo stat | nc localhost 2181 | grep -E '^(Mode: leader|Mode: follower)$'"
+            # Give the cluster more time to form before the first check
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 10 # Allow more failures during election
+          command:
+            - "sh"
+            - "-c"
+            - |
+              # The pod name is zk-0, zk-1, zk-2
+              # We need to extract the number and add 1 for myid.
+              export ZOO_MY_ID=$((${GET_MY_ID_PADDED##*-} + 1))
+              #echo ${ZOO_MY_ID}
+              echo "${ZOO_MY_ID}" > /data/myid
+              
+              echo "clientPort=${ZOO_CLIENT_PORT}" > /conf/zoo.cfg
+              echo "tickTime=${ZOO_TICK_TIME}" >> /conf/zoo.cfg
+              echo "dataDir=${ZOO_DATA_DIR}" >> /conf/zoo.cfg
+              echo "quorumListenOnAllIPs=true" >> /conf/zoo.cfg
+              echo "clientPortAddress=0.0.0.0" >> /conf/zoo.cfg
+              echo "4lw.commands.whitelist=ruok,srvr,stat" >> /conf/zoo.cfg
+              echo "initLimit=5" >> /conf/zoo.cfg
+              echo "syncLimit=2" >> /conf/zoo.cfg
+
+              for server in $ZOO_SERVERS; do
+                echo "$server"
+              done >> /conf/zoo.cfg
+              
+              #cat /conf/zoo.cfg
+              
+              # Now run the standard Zookeeper entrypoint
+              /docker-entrypoint.sh zkServer.sh start-foreground
+          env:
+            - name: ZOO_CLIENT_PORT
+              value: "2181"
+            # Correctly formatted FQDNs for ZOO_SERVERS
+            - name: GET_MY_ID_PADDED
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: ZOO_SERVERS
+              value: "server.1=zk-0.zk-hs.default.svc.cluster.local:2888:3888 server.2=zk-1.zk-hs.default.svc.cluster.local:2888:3888 server.3=zk-2.zk-hs.default.svc.cluster.local:2888:3888"
+            - name: ZOO_DATA_DIR
+              value: /data
+            - name: ZOO_MY_ID_PATH
+              value: "/data/myid"
+            - name: ZOO_TICK_TIME
+              value: "2000"
+            - name: ZOO_CFG_EXTRA
+              value: |
+                quorumListenOnAllIPs=true
+                clientPortAddress=0.0.0.0
+                clientPort=2181
+                4lw.commands.whitelist=ruok,srvr,stat
+          volumeMounts:
+            - name: data
+              mountPath: /data
+  # You need a volume claim template for Zookeeper data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 500Mi

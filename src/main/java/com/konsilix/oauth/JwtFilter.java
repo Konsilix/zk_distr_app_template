@@ -11,6 +11,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -20,14 +22,16 @@ import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.util.Collections;
 
+@Slf4j
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
-    // TODO - move secret to application.yml
-    private final String jwtSecretString = "bXlfc2VjcmV0X2tleQ==bXlfc2VjcmV0X2tleQ==bXlfc2VjcmV0X2tleQ==";
-    private final SecretKey jwtSecret = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecretString));
+    private final SecretKey jwtSecret;
 
-
+    // Use constructor injection here as well.
+    public JwtFilter(@Value("${app.jwt.secret:x1yz1234567890}") String jwtSecretString) {
+        this.jwtSecret = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecretString));
+    }
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
@@ -44,9 +48,9 @@ public class JwtFilter extends OncePerRequestFilter {
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         username, null, Collections.emptyList());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                System.out.println("Filter: Token validated successfully for user: " + username);
+                log.debug("Filter: Token validated successfully for user: " + username);
             } catch (JwtException e) {
-                System.out.println("Filter: Invalid JWT token: " + e.getMessage());
+                log.debug("Filter: Invalid JWT token: {}", e.getMessage());
                 // Token is invalid, clear context and proceed
                 SecurityContextHolder.clearContext();
             }
@@ -58,7 +62,7 @@ public class JwtFilter extends OncePerRequestFilter {
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
                 if ("jwt".equals(cookie.getName())) {
-                    System.out.println("filter: Parsed token from HttpOnly cookie");
+                    log.debug("filter: Parsed token from HttpOnly cookie");
                     return cookie.getValue();
                 }
             }

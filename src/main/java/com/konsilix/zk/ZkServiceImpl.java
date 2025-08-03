@@ -209,7 +209,7 @@ public class ZkServiceImpl implements ZkService {
     }
 
     /*
-     * App Logic
+     * DocChatBot Logic
      */
     @Override
     public void createNodeInAppZnode(String nodeName, String data) throws KeeperException.NodeExistsException {

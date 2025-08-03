@@ -5,9 +5,14 @@
 # ------------------------------------------------------------
 # Application-Specific Ignore Rules
 # ------------------------------------------------------------
-src/main/resources/application.yml
+app.version
+src/main/resources/application.yaml
 upload-dir
-
+knowledge_base.ser
+tracked_users.json
+.idea
+target
+*.pid
 # ------------------------------------------------------------
 # General Ignore Rules
 # ------------------------------------------------------------
@@ -160,7 +165,7 @@ nb-configuration.xml  # NetBeans configuration
 # Docker Specific Ignore Rules
 # ------------------------------------------------------------
 # Built images (often stored in a local cache or registry, not committed)
-# Docker usually builds from the Dockerfile, so the output isn't directly
+# Docker usually builds from the old-dockerfile, so the output isn't directly
 # in the git repo. However, some tools might create temporary files.
 
 # Docker build context temporary files

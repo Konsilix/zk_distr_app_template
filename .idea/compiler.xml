@@ -9,10 +9,21 @@
         <outputRelativeToContentRoot value="true" />
         <module name="transcriptor" />
       </profile>
+      <profile name="Annotation profile for ChatBot" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.32/lombok-1.18.32.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/springframework/boot/spring-boot-configuration-processor/3.4.8/spring-boot-configuration-processor-3.4.8.jar" />
+        </processorPath>
+        <module name="theApp" />
+      </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="theApp" options="-parameters" />
       <module name="transcriptor" options="-parameters" />
     </option>
   </component>

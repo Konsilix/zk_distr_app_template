@@ -1,6 +1,6 @@
 package com.konsilix.services;
 
-import com.konsilix.theApp.models.File;
+import com.konsilix.chatbot.models.File;
 
 import java.util.ArrayList;
 import java.util.List;

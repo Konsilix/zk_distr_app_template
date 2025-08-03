@@ -1,0 +1,16 @@
+apiVersion: skaffold/v4beta7
+kind: Config
+metadata:
+  name: chatbot
+build:
+  local:
+    push: false
+  artifacts:
+    - image: chatbot
+      jib: {}
+manifests:
+  rawYaml:
+    - k8s/deployment-zookeeper.yaml
+    - k8s/deployment-chatbot.yaml
+deploy:
+  kubectl: {}
