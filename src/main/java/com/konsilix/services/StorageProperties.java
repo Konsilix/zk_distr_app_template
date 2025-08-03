@@ -7,9 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-@Component
-@Scope("singleton")
-@ConfigurationProperties(prefix = "storage")
+@ConfigurationProperties(prefix = "app.storage")
 @Getter
 @Setter
 public class StorageProperties {

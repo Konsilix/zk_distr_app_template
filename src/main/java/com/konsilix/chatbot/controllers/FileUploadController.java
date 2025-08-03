@@ -1,4 +1,4 @@
-package com.konsilix.theApp.controllers;
+package com.konsilix.chatbot.controllers;
 
 //import java.io.FileInputStream;
 import java.io.IOException;
@@ -37,14 +37,13 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 
 @Slf4j // this gives access to a logger called "log"
 @Controller
-@CrossOrigin(origins = "http://localhost:4200") 
+//@CrossOrigin(origins = "http://localhost:4200")
 public class FileUploadController {
     private final StorageService storageService;
+    private final ZkService zkService; // Make final
 
-    @Autowired
-    private ZkService zkService;
-
-
+    // A single constructor for all dependencies is cleaner.
+    // The separate @Autowired field is now redundant.
     @Autowired
     public FileUploadController(StorageService storageService, ZkService zkService) {
         this.storageService = storageService;
@@ -108,7 +107,7 @@ public class FileUploadController {
                 }
         ).collect(Collectors.toList());
 
-        log.info(String.format("listUploadedFiles: %s\n", returnList.toString()));
+        log.info("listUploadedFiles: {}\n", returnList.toString());
         return returnList;
     }
 
@@ -124,7 +123,7 @@ public class FileUploadController {
         String remoteAddress = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
                 .getRequest().getRemoteAddr();
 
-        System.out.printf("Sending file %s to requester %s\n",filename, remoteAddress);
+        log.info("Sending file {} to requester {}",filename, remoteAddress);
 
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
                 "attachment; filename=\"" + file.getFilename() + "\"").body(file);

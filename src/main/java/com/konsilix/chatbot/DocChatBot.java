@@ -1,5 +1,6 @@
-package com.konsilix.theApp;
+package com.konsilix.chatbot;
 
+import com.konsilix.services.StorageProperties;
 import com.konsilix.zk.configuration.AppZkProperties;
 import com.konsilix.utils.Utils;
 
@@ -15,7 +16,7 @@ import java.io.IOException;
 import static com.konsilix.zk.ZkDemoUtil.getMyHostname;
 
 @SpringBootApplication(scanBasePackages={"com.konsilix"})
-@EnableConfigurationProperties(AppZkProperties.class)
+@EnableConfigurationProperties({AppZkProperties.class, StorageProperties.class})
 public class DocChatBot {
     static String PID_FILE_NAME = "app.pid";
 

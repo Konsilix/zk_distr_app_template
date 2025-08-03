@@ -2,6 +2,7 @@ package com.konsilix.oauth;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 
 import javax.crypto.SecretKey;
@@ -19,10 +20,14 @@ import java.util.Map;
 @RequestMapping("/auth")
 public class AuthController {
 
-    private final String jwtSecretString = "bXlfc2VjcmV0X2tleQ==bXlfc2VjcmV0X2tleQ==bXlfc2VjcmV0X2tleQ==";
-    private final SecretKey jwtSecret = Keys.hmacShaKeyFor(jwtSecretString.getBytes());
+    private final SecretKey jwtSecret;
     private final long jwtExpirationMs = 3600000; // 1 hour
 
+    // Use constructor injection to receive the property at creation time.
+    public AuthController(@Value("${app.jwt.secret:x1yz1234567890}") String jwtSecretString) {
+        // This allows you to initialize the final 'jwtSecret' field correctly.
+        this.jwtSecret = Keys.hmacShaKeyFor(jwtSecretString.getBytes());
+    }
     @GetMapping("/success")
     public ResponseEntity<Map<String, String>> success(Authentication authentication) {
         String token = generateToken(authentication.getName());

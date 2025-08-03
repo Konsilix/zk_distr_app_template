@@ -1,0 +1,89 @@
+# /Users/rob/dev/distr_chatbot/k8s/deployment-chatbot.yaml
+
+# --- Chatbot Load Balancer Service ---
+# This service still provides a single entry point for external traffic.
+apiVersion: v1
+kind: Service
+metadata:
+  name: chatbot-loadbalancer
+spec:
+  #type: NodePort
+  type: LoadBalancer
+  #type: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8081
+  selector:
+    app: chatbot
+---
+# A headless service is required for the chatbot StatefulSet.
+apiVersion: v1
+kind: Service
+metadata:
+  name: chatbot-headless-service
+spec:
+  clusterIP: None
+  selector:
+    app: chatbot
+---
+# --- Chatbot StatefulSet ---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: chatbot
+spec:
+  serviceName: "chatbot-headless-service"
+  replicas: 3
+  # The default is OrderedReady, which creates them sequentially. Other is Parallel
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      app: chatbot
+  template:
+    metadata:
+      labels:
+        app: chatbot
+    spec:
+      initContainers:
+        - name: wait-for-zookeeper
+          image: zookeeper:3.8.4
+          command: ['sh','-c']
+          args:
+            - |
+              #set -x
+              SECONDS=5
+              sleep ${SECONDS}
+              ZK_NODES="zk-0.zk-hs.default.svc.cluster.local:2181 zk-1.zk-hs.default.svc.cluster.local:2181 zk-2.zk-hs.default.svc.cluster.local:2181"
+              echo "Waiting for Zookeeper ensemble to be ready..."
+              # Loop indefinitely until all Zookeeper client ports are responsive
+              until
+                ALL_READY=true
+                for NODE_PORT in $ZK_NODES; do
+                  NODE=$(echo $NODE_PORT | cut -d: -f1)
+                  PORT=$(echo $NODE_PORT | cut -d: -f2)
+                  echo "Checking if $NODE:$PORT is ready (ruok)..."
+                  if ! echo ruok | nc -w 5 $NODE $PORT | grep -q imok; then
+                    echo "$NODE:$PORT not ready or not responsive."
+                    ALL_READY=false
+                    break # Break from inner loop, retry all
+                fi
+                echo "$NODE:$PORT is ready."
+              done
+              $ALL_READY # If ALL_READY is true, the until loop exits
+              do
+                echo "Zookeeper ensemble not fully ready. Retrying in ${SECONDS} seconds..."
+                echo $(date +"%Y-%m-%d-%H-%M-%S")
+                sleep ${SECONDS}
+              done
+              echo "All Zookeeper servers are now ready and accepting client connections. Starting chatbot."
+      containers:
+        - name: chatbot
+          image: chatbot
+          env:
+            - name: SPRING_CLOUD_ZOOKEEPER_CONNECT_STRING
+              value: "zk-0.zk-hs.default.svc.cluster.local:2181,zk-1.zk-hs.default.svc.cluster.local:2181,zk-2.zk-hs.default.svc.cluster.local:2181"
+            - name: SERVER_PORT
+              value: "8081"
+            - name: MANAGEMENT_SERVER_PORT
+              value: "3001"

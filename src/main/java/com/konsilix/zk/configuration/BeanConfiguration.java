@@ -3,6 +3,7 @@ package com.konsilix.zk.configuration;
 import com.konsilix.zk.ZkService;
 import com.konsilix.zk.ZkServiceImpl;
 import com.konsilix.zk.watchers.*;
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.I0Itec.zkclient.IZkChildListener;
@@ -10,46 +11,20 @@ import org.I0Itec.zkclient.IZkDataListener;
 import org.I0Itec.zkclient.IZkStateListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
-/** @author "Bikas Katwal" 2019/03/26 - initial */
-/** @author "Rob Marano" 2023/05/01 - updated, expanded */
-@Slf4j // this gives access to a logger called "log"
+@Slf4j
 @Configuration
 public class BeanConfiguration {
-    @Autowired
-    public BeanConfiguration(@Qualifier("appZkProperties") AppZkProperties appZkProperties) {
-        // TODO rob - incorporate exponential backoff for retries
-        this.appProperties = appZkProperties;
-        log.debug("**** BeanConfiguration constructor");
-        String ipAddress = "localhost";
-        try {
-            InetAddress ip = InetAddress.getLocalHost();
-            ipAddress = (ip.getHostAddress()).trim();
-        } catch (UnknownHostException e) {
-            log.debug("UnknownHostException occurred: ", e);
-        }
-        String thePort = appProperties.getPort();
-        int sessionTimeout = appProperties.getSessionTimeout();
-        int connectionTimeout = appProperties.getConnectionTimeout();
-        this.storageLocation = appProperties.getStorageLocation();
 
-        if ("single".equals(appProperties.getMode())) {
-            this.zkHostPort = String.format("%s:%s", ipAddress, thePort);
-        } else {
-            this.zkHostPort = appProperties.getServers();
-        }
-        log.info(String.format("Zookeeper host port: %s\n", this.zkHostPort));
-        log.info(String.format("Zookeeper session timeout: %d\n", sessionTimeout));
-        log.info(String.format("Zookeeper connection timeout: %d\n", connectionTimeout));
-    }
+    // Inject the standard Spring Cloud Zookeeper property.
+    // This value comes directly from the environment variable in your deployment-chatbot.yaml.
+    @Value("${spring.cloud.zookeeper.connect-string}")
+    private String zookeeperConnectString;
 
     private final AppZkProperties appProperties;
 
@@ -59,12 +34,40 @@ public class BeanConfiguration {
     @Getter
     String storageLocation;
 
+    @Autowired
+    public BeanConfiguration(@Qualifier("appZkProperties") AppZkProperties appZkProperties) {
+        this.appProperties = appZkProperties;
+        log.debug("**** BeanConfiguration constructor");
+    }
+
+    /**
+     * This method runs after dependency injection is complete.
+     * It's a safer place to use injected values than the constructor.
+     */
+    @PostConstruct
+    private void initialize() {
+        // Use the standard property injected by Spring Cloud.
+        // This makes the custom code compatible with the k8s environment variable.
+        this.zkHostPort = this.zookeeperConnectString;
+
+        int sessionTimeout = appProperties.getSessionTimeout();
+        int connectionTimeout = appProperties.getConnectionTimeout();
+        this.storageLocation = appProperties.getStorageLocation();
+
+        log.info("Zookeeper host port: {}", this.zkHostPort);
+        log.info("Zookeeper session timeout: {}", sessionTimeout);
+        log.info("Zookeeper connection timeout: {}", connectionTimeout);
+    }
+
+
     @Bean(name = "zkService")
     @Scope("singleton")
     public ZkService zkService() {
+        // Now this.zkHostPort will have the correct value from the environment variable.
         return new ZkServiceImpl(this.zkHostPort, appProperties.getSessionTimeout(), appProperties.getConnectionTimeout());
     }
 
+    // ... rest of the file is unchanged ...
     @Bean(name = "allNodesChangeListener")
     @Scope("singleton")
     public IZkChildListener allNodesChangeListener() {
@@ -102,6 +105,8 @@ public class BeanConfiguration {
         connectStateChangeListener.setZkService(zkService());
         return connectStateChangeListener;
     }
+
+
 
     @Bean(name = "dataChangeListener")
     @Scope("singleton")

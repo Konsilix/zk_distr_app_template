@@ -1,4 +1,4 @@
-package com.konsilix.theApp.models;
+package com.konsilix.chatbot.models;
 
 import lombok.Getter;
 import lombok.Setter;

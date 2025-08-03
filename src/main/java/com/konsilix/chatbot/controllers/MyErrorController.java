@@ -1,4 +1,4 @@
-package com.konsilix.theApp.controllers;
+package com.konsilix.chatbot.controllers;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;

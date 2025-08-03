@@ -1,7 +1,7 @@
 package com.konsilix.zk.watchers;
 
 import com.konsilix.zk.ZkService;
-import com.konsilix.theApp.models.ClusterInfo;
+import com.konsilix.chatbot.models.ClusterInfo;
 import java.util.List;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

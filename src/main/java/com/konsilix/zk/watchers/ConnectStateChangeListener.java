@@ -3,9 +3,9 @@ package com.konsilix.zk.watchers;
 import static com.konsilix.zk.ZkDemoUtil.getHostPortOfServer;
 import static com.konsilix.zk.ZkDemoUtil.isEmpty;
 
-import com.konsilix.theApp.models.File;
+import com.konsilix.chatbot.models.File;
 import com.konsilix.zk.ZkService;
-import com.konsilix.theApp.models.ClusterInfo;
+import com.konsilix.chatbot.models.ClusterInfo;
 import com.konsilix.services.DataStorage;
 import java.util.List;
 import lombok.Setter;

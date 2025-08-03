@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Slf4j // this gives access to a logger called "log"
-@ConfigurationProperties(prefix="zk")
+@ConfigurationProperties(prefix="app.zk")
 @Configuration
 @Getter
 @Setter

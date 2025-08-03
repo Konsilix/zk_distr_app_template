@@ -1,6 +1,6 @@
-package com.konsilix.theApp.controllers;
+package com.konsilix.chatbot.controllers;
 
-import com.konsilix.theApp.models.ClusterInfo;
+import com.konsilix.chatbot.models.ClusterInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

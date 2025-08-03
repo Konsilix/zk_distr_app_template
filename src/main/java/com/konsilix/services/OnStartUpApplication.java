@@ -2,8 +2,8 @@ package com.konsilix.services;
 
 import com.konsilix.zk.configuration.BeanConfiguration;
 
-import com.konsilix.theApp.models.ClusterInfo;
-import com.konsilix.theApp.models.File;
+import com.konsilix.chatbot.models.ClusterInfo;
+import com.konsilix.chatbot.models.File;
 import com.konsilix.zk.ZkService;
 
 import lombok.extern.slf4j.Slf4j;
