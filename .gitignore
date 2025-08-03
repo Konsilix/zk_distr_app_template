@@ -10,7 +10,6 @@ src/main/resources/application.yaml
 upload-dir
 knowledge_base.ser
 tracked_users.json
-.idea/
 target
 *.pid
 # ------------------------------------------------------------
