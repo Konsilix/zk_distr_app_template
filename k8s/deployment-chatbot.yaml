@@ -81,6 +81,14 @@ spec:
         - name: chatbot
           image: chatbot
           env:
+            - name: KUBERNETES_NODE_NAME # used in logback-spring.xml
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: KUBERNETES_POD_NAME # used in logback-spring.xml
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
             - name: SPRING_CLOUD_ZOOKEEPER_CONNECT_STRING
               value: "zk-0.zk-hs.default.svc.cluster.local:2181,zk-1.zk-hs.default.svc.cluster.local:2181,zk-2.zk-hs.default.svc.cluster.local:2181"
             - name: SERVER_PORT
