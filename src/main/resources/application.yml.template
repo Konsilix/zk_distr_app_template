@@ -20,56 +20,39 @@ spring:
           github:
             client-id: YOUR_GITHUB_CLIENT_ID
             client-secret: YOUR_GITHUB_CLIENT_SECRET
-            scope: read:user
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-          linkedin:
-            client-id: YOUR_LINKEDIN_CLIENT_ID
-            client-secret: YOUR_LINKEDIN_CLIENT_SECRET
-            scope: r_liteprofile, r_emailaddress
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-          microsoft:
-            client-id: YOUR_MICROSOFT_CLIENT_ID
-            client-secret: YOUR_MICROSOFT_CLIENT_SECRET
-            scope: User.Read
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-          apple:
-            client-id: YOUR_APPLE_CLIENT_ID
-            client-secret: YOUR_APPLE_CLIENT_SECRET
-            scope: name, email
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
 server:
   port: 3000
   error:
     whitelabel:
       enabled: false
-#  error:
-#    path: /error
 management:
   server:
     port: 3001
-# used in local mode, ZK cluster already running and accessible on 2181
-#server:
-#  port: 1970
-#management:
-#  server:
-#    port: 1971
 
-# App Properties
-storage:
-  location: /app/upload-dir
+# All custom application properties are now nested under 'app'.
+app:
+  storage:
+    location: /data/upload-dir
+  zk:
+    port: 2181
+    sessionTimeout: 30000
+    connectionTimeout: 120000
+    mode: single
+    servers: zk-0.zk-hs.default.svc.cluster.local:2181,zk-1.zk-hs.default.svc.cluster.local:2181,zk-2.zk-hs.default.svc.cluster.local:2181
+  jwt:
+    # It's highly recommended to use a strong, randomly generated secret
+    # and manage it via environment variables in production, not checked into git.
+    secret: "YOUR JWT SECRET"
 
-# Zookeeper properties
-zk:
-  port: 2181
-  sessionTimeout: 6000
-  connectionTimeout: 6000
-  servers: zkApp1:2181,zkApp2:2181,zkApp3:2181
-  mode: cluster # can be single or cluster
-
+#
+# Logging
+#
 logging:
   level:
-    edu.cooper.ai: DEBUG
-    org.apache.zookeeper: ERROR
-    web: WARN
+    com.konsilix: INFO
+    org.I0Itec.zkclient: WARN
+    org.apache.zookeeper: WARN
     org.thymeleaf: WARN
+    web: WARN
     root: WARN
