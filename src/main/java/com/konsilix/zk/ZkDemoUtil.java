@@ -22,7 +22,8 @@ public final class ZkDemoUtil {
 
     public static final String DATA = "/data";
 
-    public static final String FILES = "/files";
+    public static final String FILES_NODE = "/files";
+    public static final String KNOWLEDGE_BASE_NODE = "/knowledge_base";
 
     public static final String APP = "/app";
 
