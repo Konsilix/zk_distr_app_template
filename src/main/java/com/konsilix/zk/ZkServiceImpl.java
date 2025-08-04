@@ -136,9 +136,13 @@ public class ZkServiceImpl implements ZkService {
             zkClient.create(APP, "app logic node", CreateMode.PERSISTENT);
             log.debug("Created app node");
         }
-        if (!zkClient.exists(FILES)) {
-            zkClient.create(FILES, "file logic node", CreateMode.PERSISTENT);
+        if (!zkClient.exists(FILES_NODE)) {
+            zkClient.create(FILES_NODE, "file logic node", CreateMode.PERSISTENT);
             log.debug("Created files node");
+        }
+        if (!zkClient.exists(KNOWLEDGE_BASE_NODE)) {
+            zkClient.create(KNOWLEDGE_BASE_NODE, "knowledge base node", CreateMode.PERSISTENT);
+            log.debug("Created knowledge base node");
         }
     }
 
@@ -174,17 +178,17 @@ public class ZkServiceImpl implements ZkService {
 
     @Override
     public void createNodeInFilesZnode(String data) {
-        String parentPath = FILES;
+        String parentPath = FILES_NODE;
         String filePath = parentPath + "/" + data;
         System.out.println("FILE NAME = ___"+data+"___");
-        if (!zkClient.exists(FILES)) {
-            zkClient.create(FILES, "files under management", CreateMode.PERSISTENT);
+        if (!zkClient.exists(FILES_NODE)) {
+            zkClient.create(FILES_NODE, "files under management", CreateMode.PERSISTENT);
         }
         zkClient.create(filePath, filePath, CreateMode.PERSISTENT);
     }
 
     public void deleteNodeInFilesZnode(String data) {
-        String parentPath = FILES;
+        String parentPath = FILES_NODE;
         String filePath = parentPath + "/" + data;
         System.out.println("FILE NAME = ___"+data+"___");
         if (zkClient.exists(filePath)) {
@@ -208,19 +212,39 @@ public class ZkServiceImpl implements ZkService {
         zkClient.subscribeDataChanges(DATA, iZkDataListener);
     }
 
-    /*
-     * DocChatBot Logic
-     */
     @Override
     public void createNodeInAppZnode(String nodeName, String data) throws KeeperException.NodeExistsException {
         zkClient.create(APP.concat("/").concat(nodeName), data, CreateMode.PERSISTENT);
     }
 
-    /*
-     * File Logic
-     */
     @Override
     public void createNodeInFilesZnode(String nodeName, String data) throws KeeperException.NodeExistsException {
-        zkClient.create(FILES.concat("/").concat(nodeName), data, CreateMode.PERSISTENT);
+        zkClient.create(FILES_NODE.concat("/").concat(nodeName), data, CreateMode.PERSISTENT);
+    }
+
+    @Override
+    public void createEphemeralNode(String path, String data) {
+        try {
+            zkClient.create(path, data, CreateMode.EPHEMERAL);
+        } catch (ZkNodeExistsException e) {
+            log.warn("Node already exists: {}", path);
+        }
+    }
+
+    @Override
+    public void createPersistentNode(String path, String data) {
+        if (!zkClient.exists(path)) {
+            zkClient.create(path, data, CreateMode.PERSISTENT);
+        }
+    }
+
+    @Override
+    public boolean exists(String path) {
+        return zkClient.exists(path);
+    }
+
+    @Override
+    public List<String> getChildren(String path) {
+        return zkClient.getChildren(path);
     }
 }
